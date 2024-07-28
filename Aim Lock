@@ -12,61 +12,65 @@ _G.AimPart = "Head" -- Where the aimbot script would lock at.
 _G.Sensitivity = 0 -- How many seconds it takes for the aimbot script to officially lock onto the target's aimpart.
 
 local function GetClosestPlayer()
-	local maximumDistance = math.huge
-	local target = nil
+    local maximumDistance = math.huge
+    local target = nil
 
-	for _, player in ipairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			local humanoid = player.Character:FindFirstChild("Humanoid")
-			if humanoid and humanoid.Health > 0 then
-				if not _G.TeamCheck or player.Team ~= LocalPlayer.Team then
-					local screenPoint = Camera:WorldToScreenPoint(player.Character.HumanoidRootPart.Position)
-					local vectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                if not _G.TeamCheck or player.Team ~= LocalPlayer.Team then
+                    local screenPoint = Camera:WorldToScreenPoint(player.Character.HumanoidRootPart.Position)
+                    local vectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
 
-					if vectorDistance < maximumDistance then
-						target = player
-						maximumDistance = vectorDistance
-					end
-				end
-			end
-		end
-	end
+                    if vectorDistance < maximumDistance then
+                        target = player
+                        maximumDistance = vectorDistance
+                    end
+                end
+            end
+        end
+    end
 
-	return target
+    return target
 end
 
 UserInputService.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton2 then
-		Holding = true
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Holding = true
+    end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton2 then
-		Holding = false
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Holding = false
+    end
 end)
 
-RunService.RenderStepped:Connect(function()
-	if Holding and _G.AimbotEnabled then
-		local closestPlayer = GetClosestPlayer()
-		if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(_G.AimPart) then
-			TweenService:Create(Camera, TweenInfo.new(_G.Sensitivity, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-				CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character[_G.AimPart].Position)
-			}):Play()
-		end
-	end
-end)
+local function AimAtTarget()
+    if Holding and _G.AimbotEnabled then
+        local closestPlayer = GetClosestPlayer()
+        if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(_G.AimPart) then
+            TweenService:Create(Camera, TweenInfo.new(_G.Sensitivity, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                CFrame = CFrame.new(Camera.Cframe.Position, closestPlayer.Character[_G.AimPart].Position)
+            }):Play()
+        end
+    end
+end
 
--- Handle player respawns and round restarts
-Players.LocalPlayer.CharacterAdded:Connect(function()
-	Holding = false
+RunService.RenderStepped:Connect(AimAtTarget)
+
+-- Handle player respawns and keep the aimlock functionality
+LocalPlayer.CharacterAdded:Connect(function()
+    Holding = false
+    RunService.RenderStepped:Connect(AimAtTarget)
 end)
 
 Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function()
-		if player == LocalPlayer then
-			Holding = false
-		end
-	end)
+    player.CharacterAdded:Connect(function()
+        if player == LocalPlayer then
+            Holding = false
+            RunService.RenderStepped:Connect(AimAtTarget)
+        end
+    end)
 end)
