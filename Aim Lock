@@ -57,3 +57,16 @@ RunService.RenderStepped:Connect(function()
 		end
 	end
 end)
+
+-- Handle player respawns and round restarts
+Players.LocalPlayer.CharacterAdded:Connect(function()
+	Holding = false
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		if player == LocalPlayer then
+			Holding = false
+		end
+	end)
+end)
