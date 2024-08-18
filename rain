@@ -1,0 +1,61 @@
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+local SoundService = game:GetService("SoundService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local head = character:WaitForChild("Head")
+local workspace = game.Workspace
+
+-- Rain properties
+local rainSpeed = 150 -- Speed at which raindrops fall
+local rainHeight = 250 -- Height above the player where rain starts
+local rainRadius = 75 -- Radius around the player where rain will spawn
+local rainFrequency = 0.05 -- Time interval between each raindrop spawn
+local windSpeed = 30 -- Speed of the wind effect on raindrops
+local soundId = "rbxassetid://9120549564" -- Sound ID for the storm sound
+
+-- Storm sound setup
+local stormSound = Instance.new("Sound")
+stormSound.SoundId = soundId
+stormSound.Looped = true
+stormSound.Volume = 1
+stormSound.Parent = SoundService
+stormSound:Play()
+
+-- Function to create a raindrop
+local function createRaindrop()
+    local raindrop = Instance.new("Part")
+    raindrop.Size = Vector3.new(math.random(0.05, 0.2), math.random(0.5, 1.5), math.random(0.05, 0.2))
+    raindrop.BrickColor = BrickColor.new("Really black")
+    raindrop.Material = Enum.Material.SmoothPlastic
+    raindrop.Anchored = false
+    raindrop.CanCollide = false
+    raindrop.Shape = Enum.PartType.Block
+    raindrop.Transparency = 0.7  -- More transparent to blend better with the environment
+
+    -- Random position around the player
+    local randomPosition = Vector3.new(
+        math.random(-rainRadius, rainRadius),
+        rainHeight,
+        math.random(-rainRadius, rainRadius)
+    )
+
+    raindrop.Position = head.Position + randomPosition
+    raindrop.Parent = workspace
+
+    -- Apply velocity to simulate falling with wind effect
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(math.random(-windSpeed, windSpeed), -rainSpeed, math.random(-windSpeed, windSpeed))
+    bodyVelocity.Parent = raindrop
+
+    -- Cleanup raindrop after some time
+    Debris:AddItem(raindrop, 5)
+end
+
+-- Continuously create raindrops
+RunService.Heartbeat:Connect(function()
+    createRaindrop()
+    wait(rainFrequency)
+end)
