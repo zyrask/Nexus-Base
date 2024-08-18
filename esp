@@ -1,0 +1,71 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Configuration
+local ESPColor = Color3.fromRGB(255, 0, 0) -- Red color
+local ESPTransparency = 0.5
+
+-- Function to create ESP for a player's character
+local function createESP(character)
+    if not character or character:FindFirstChildOfClass("Highlight") then
+        return
+    end
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.Parent = character
+    highlight.Adornee = character
+    highlight.FillColor = ESPColor
+    highlight.FillTransparency = ESPTransparency
+    highlight.OutlineTransparency = ESPTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+end
+
+-- Function to remove ESP from a player's character
+local function removeESP(character)
+    local highlight = character:FindFirstChild("ESPHighlight")
+    if highlight then
+        highlight:Destroy()
+    end
+end
+
+-- Function to handle a new player's character
+local function onCharacterAdded(character)
+    createESP(character)
+end
+
+-- Function to handle a new player
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+    
+    -- If the character is already loaded
+    if player.Character then
+        onCharacterAdded(player.Character)
+    end
+end
+
+-- Function to handle a player leaving
+local function onPlayerRemoving(player)
+    if player.Character then
+        removeESP(player.Character)
+    end
+end
+
+-- Connect player events
+Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(onPlayerRemoving)
+
+-- Initialize ESP for all existing players
+for _, player in ipairs(Players:GetPlayers()) do
+    onPlayerAdded(player)
+end
+
+-- Periodically check for new characters to ensure ESP is always applied
+RunService.Heartbeat:Connect(function()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character and not player.Character:FindFirstChildOfClass("Highlight") then
+            createESP(player.Character)
+        end
+    end
+end)
