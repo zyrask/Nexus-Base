@@ -1,0 +1,62 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local function CreateBoxEsp(character)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Size = Vector3.new(4, 7, 1) -- Adjust the size as needed
+    box.Adornee = character:FindFirstChild("HumanoidRootPart")
+    box.AlwaysOnTop = true
+    box.ZIndex = 10
+    box.Transparency = 0.5
+    box.Color3 = Color3.new(1, 0, 0) -- Red color
+    box.Parent = character:FindFirstChild("HumanoidRootPart")
+end
+
+local function OnCharacterAdded(character)
+    if character:FindFirstChild("HumanoidRootPart") then
+        CreateBoxEsp(character)
+    end
+end
+
+local function OnPlayerAdded(player)
+    player.CharacterAdded:Connect(OnCharacterAdded)
+end
+
+local function OnPlayerRemoving(player)
+    local character = player.Character
+    if character then
+        local box = character:FindFirstChildOfClass("BoxHandleAdornment")
+        if box then
+            box:Destroy()
+        end
+    end
+end
+
+local function InitializePlayer(player)
+    OnPlayerAdded(player)
+    -- Apply ESP to the player’s current character if they are already in the game
+    if player.Character then
+        OnCharacterAdded(player.Character)
+    end
+end
+
+-- Initialize existing players
+for _, player in ipairs(Players:GetPlayers()) do
+    InitializePlayer(player)
+end
+
+-- Connect events
+Players.PlayerAdded:Connect(InitializePlayer)
+Players.PlayerRemoving:Connect(OnPlayerRemoving)
+
+RunService.RenderStepped:Connect(function()
+    for _, player in ipairs(Players:GetPlayers()) do
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local box = character.HumanoidRootPart:FindFirstChildOfClass("BoxHandleAdornment")
+            if box then
+                box.CFrame = character.HumanoidRootPart.CFrame
+            end
+        end
+    end
+end)
