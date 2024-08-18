@@ -1,0 +1,20 @@
+local Lighting = game:GetService("Lighting")
+
+-- Function to apply Full Bright effect
+local function ApplyFullBright()
+    Lighting.Ambient = Color3.fromRGB(255, 255, 255) -- Set ambient light to white
+    Lighting.Brightness = 2 -- Adjust brightness (default is 1)
+    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255) -- Set outdoor ambient light to white
+    Lighting.FogColor = Color3.fromRGB(255, 255, 255) -- Set fog color to white
+    Lighting.FogEnd = 100000 -- Set fog distance to very high value to make it invisible
+    Lighting.FogStart = 0 -- Set fog start to 0 to ensure full visibility
+    Lighting.TimeOfDay = "14:00:00" -- Set time of day to midday for maximum light
+end
+
+-- Apply Full Bright effect when the game starts
+ApplyFullBright()
+
+-- Optionally, you can apply the effect whenever a player joins
+game.Players.PlayerAdded:Connect(function()
+    ApplyFullBright()
+end)
