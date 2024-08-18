@@ -1,0 +1,61 @@
+-- Obscure variable names
+local player = game:GetService('Players').LocalPlayer
+local runService = game:GetService('RunService')
+local userInputService = game:GetService('UserInputService')
+
+local isNoclipActive = false
+local connection
+
+-- Function to set CanCollide properties to false
+local function setNoclip()
+    local character = player.Character
+    if character then
+        local partsToNoclip = {
+            character:FindFirstChild('Head'),
+            character:FindFirstChild('LowerTorso'),
+            character:FindFirstChild('UpperTorso'),
+            character:FindFirstChild('HumanoidRootPart'),
+            character:FindFirstChild('Badge') -- Optional, if Badge exists
+        }
+        
+        for _, part in pairs(partsToNoclip) do
+            if part then
+                part.CanCollide = false
+            end
+        end
+    end
+end
+
+-- Function to enable noclip
+local function enableNoclip()
+    if not isNoclipActive then
+        connection = runService.Stepped:Connect(function()
+            pcall(setNoclip) -- Use pcall to prevent potential errors from revealing the script
+        end)
+        isNoclipActive = true
+    end
+end
+
+-- Function to disable noclip
+local function disableNoclip()
+    if isNoclipActive and connection then
+        connection:Disconnect()
+        isNoclipActive = false
+    end
+end
+
+-- Function to toggle noclip
+local function toggleNoclip()
+    if isNoclipActive then
+        disableNoclip()
+    else
+        enableNoclip()
+    end
+end
+
+-- Listen for the "E" key press to toggle noclip
+userInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.E then
+        toggleNoclip()
+    end
+end)
