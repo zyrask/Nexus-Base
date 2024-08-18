@@ -1,0 +1,41 @@
+local Lighting = game:GetService("Lighting")
+
+-- Function to apply post-processing effects
+local function ApplyPostProcessing()
+    -- Clear existing effects
+    for _, effect in ipairs(Lighting:GetChildren()) do
+        if effect:IsA("PostEffect") then
+            effect:Destroy()
+        end
+    end
+
+    -- Create and configure ColorCorrectionEffect
+    local colorCorrection = Instance.new("ColorCorrectionEffect")
+    colorCorrection.TintColor = Color3.fromRGB(255, 255, 255) -- Adjust tint color as needed
+    colorCorrection.Brightness = 0.2 -- Adjust brightness
+    colorCorrection.Contrast = 0.2 -- Adjust contrast
+    colorCorrection.Saturation = 0.1 -- Adjust saturation
+    colorCorrection.Parent = Lighting
+
+    -- Create and configure BloomEffect
+    local bloom = Instance.new("BloomEffect")
+    bloom.Intensity = 0.5 -- Adjust bloom intensity
+    bloom.Size = 24 -- Adjust bloom size
+    bloom.Threshold = 0.8 -- Adjust bloom threshold
+    bloom.Parent = Lighting
+
+    -- Create and configure BlurEffect
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 24 -- Adjust blur size
+    blur.Parent = Lighting
+
+    -- Optional: Add additional effects here
+end
+
+-- Apply effects when the game starts
+ApplyPostProcessing()
+
+-- Apply effects whenever a new player joins
+game.Players.PlayerAdded:Connect(function()
+    ApplyPostProcessing()
+end)
