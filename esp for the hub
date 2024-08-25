@@ -1,0 +1,120 @@
+-- ESP Variables
+local ESPEnabled = true
+local ESPColor = Color3.fromRGB(255, 0, 0) -- Default color
+local ESPTransparency = 0.5
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Function to create ESP for a player's character
+local function createESP(character)
+    if not character or character:FindFirstChildOfClass("Highlight") or not ESPEnabled then
+        return
+    end
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.Parent = character
+    highlight.Adornee = character
+    highlight.FillColor = ESPColor
+    highlight.FillTransparency = ESPTransparency
+    highlight.OutlineTransparency = ESPTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+end
+
+-- Function to remove ESP from a player's character
+local function removeESP(character)
+    local highlight = character:FindFirstChild("ESPHighlight")
+    if highlight then
+        highlight:Destroy()
+    end
+end
+
+-- Function to toggle ESP for all players
+local function toggleESP(state)
+    ESPEnabled = state
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if ESPEnabled then
+            if player.Character then
+                createESP(player.Character)
+            end
+        else
+            if player.Character then
+                removeESP(player.Character)
+            end
+        end
+    end
+end
+
+-- Function to handle a new player's character
+local function onCharacterAdded(character)
+    if ESPEnabled then
+        createESP(character)
+    end
+end
+
+-- Function to handle a new player
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+    
+    -- If the character is already loaded
+    if player.Character and ESPEnabled then
+        onCharacterAdded(player.Character)
+    end
+end
+
+-- Function to handle a player leaving
+local function onPlayerRemoving(player)
+    if player.Character then
+        removeESP(player.Character)
+    end
+end
+
+-- Connect player events
+Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(onPlayerRemoving)
+
+-- Initialize ESP for all existing players
+for _, player in ipairs(Players:GetPlayers()) do
+    onPlayerAdded(player)
+end
+
+-- Periodically check for new characters to ensure ESP is always applied
+RunService.Heartbeat:Connect(function()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character and ESPEnabled and not player.Character:FindFirstChildOfClass("Highlight") then
+            createESP(player.Character)
+        end
+    end
+end)
+
+-- Create Toggle for ESP
+local Toggle = ScriptTab:CreateToggle({
+    Name = "ESP Enabled",
+    CurrentValue = true, -- Default is on
+    Flag = "ESPToggle", -- A flag is the identifier for the configuration file
+    Callback = function(Value)
+        toggleESP(Value)
+    end
+})
+
+-- Create Color Picker for ESP Color
+local ColorPicker = ScriptTab:CreateColorPicker({
+    Name = "ESP Color",
+    Color = ESPColor, -- Default color
+    Flag = "ESPColorPicker",
+    Callback = function(Value)
+        ESPColor = Value
+        -- Update existing highlights with the new color
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChild("ESPHighlight")
+                if highlight then
+                    highlight.FillColor = ESPColor
+                end
+            end
+        end
+    end
+})
