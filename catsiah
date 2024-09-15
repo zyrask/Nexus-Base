@@ -1720,6 +1720,15 @@ end
 
 c.AnimationPlayed:Connect(a)
 
+function Notify(title, message, icon, duration)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = title;
+        Text = message;
+        Icon = icon or "14546542302"; -- You can add an image ID here if you want
+        Duration = duration or 5; -- Default duration is 5 seconds
+    })
+end
 
-
+-- Usage example:
+Notify("Loser Set", "Loser Set executed with no errors, have fun!", "rbxassetid://14546542302", 10)
 
