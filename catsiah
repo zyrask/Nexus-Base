@@ -8,7 +8,7 @@ function SendPlayerInfo(player)
     local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId="..userId.."&width=420&height=420&format=png"
     
     local embed = {
-        ["title"] = "A person has executed this Cat Hub!",
+        ["title"] = "A person has executed Cat Set!",
         ["description"] = "**User Info:**",
         ["color"] = 65280, -- green color
         ["fields"] = {
